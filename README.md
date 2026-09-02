@@ -257,9 +257,13 @@ E **abra o app no Expo Go**: uma tela nativa quebrada passa reto pelo `typecheck
       </a>
     </td>
     <td align="center" width="200">
-      <img src="https://github.com/github.png?size=200" width="100" alt="Vaga disponível"/>
+      <a href="https://github.com/Felipy116">
+        <img src="https://github.com/Felipy116.png?size=200" width="100" alt="Avatar de Felipy"/>
+      </a>
       <br/><br/>
-      <img src="https://img.shields.io/badge/a%20definir-30363D?style=for-the-badge&logo=github&logoColor=8B949E" alt="Desenvolvedor a definir"/>
+      <a href="https://github.com/Felipy116">
+        <img src="https://img.shields.io/badge/Felipy-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub de Felipy"/>
+      </a>
     </td>
   </tr>
 </table>
