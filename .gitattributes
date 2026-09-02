@@ -1,4 +1,4 @@
-# O repositório guarda tudo em LF, e o checkout também escreve LF — mesmo em
+# O repositório guarda tudo em LF, e o checkout também escreve LF, mesmo em
 # máquina com `core.autocrlf=true`. Sem isto o Windows materializa os arquivos
 # com CRLF e o `format:check` do `npm run validate` reprova o projeto inteiro,
 # embora o conteúdo versionado esteja correto.
