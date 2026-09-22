@@ -38,3 +38,32 @@ const browser: StateStorage = {
 };
 
 export const persistentStorage: StateStorage = Platform.OS === "web" ? browser : keychain;
+
+/**
+ * O código da empresa do último login que deu certo.
+ *
+ * Fica fora do store de sessão de propósito: ele precisa **sobreviver ao logout**.
+ * Guardado junto da sessão, sumiria junto, e o motorista teria de digitar o slug da
+ * transportadora toda vez que saísse do app, que é justamente o atrito que o campo
+ * lembrado existe para evitar.
+ *
+ * Só é gravado depois de um login bem-sucedido: slug digitado errado não é lembrado.
+ */
+const CHAVE_EMPRESA = "rookhub.last-tenant";
+
+export async function lerUltimaEmpresa(): Promise<string | null> {
+  try {
+    return await persistentStorage.getItem(CHAVE_EMPRESA);
+  } catch {
+    /* Conveniência, não requisito: falhar aqui só devolve o campo à tela. */
+    return null;
+  }
+}
+
+export async function guardarUltimaEmpresa(slug: string): Promise<void> {
+  try {
+    await persistentStorage.setItem(CHAVE_EMPRESA, slug);
+  } catch {
+    /* Idem: não poder lembrar não pode impedir o motorista de entrar. */
+  }
+}

@@ -7,10 +7,17 @@ interface Props {
   color?: string;
 }
 
+/**
+ * Só o símbolo, monocromático, para espaço apertado: avatar, aba, cabeçalho
+ * compacto. Onde a marca **se apresenta** (login, boot) quem entra é o
+ * `RookhubLogo`, que traz a palavra e o destaque em terracota junto.
+ */
 export function RookhubMark({ height = 44, color }: Props) {
   const colors = useColors();
-  /* Sem cor explícita a marca assume o branco de cima do gradiente. */
-  const fill = color ?? colors.onAccentSolid;
+  /* Sem cor explícita o símbolo herda o texto da superfície em que está. Era o
+     branco do gradiente, e não serve mais: o símbolo saiu do login em 22/09/2026
+     e o que sobrou são usos sobre card. */
+  const fill = color ?? colors.onSurface;
 
   return (
     <Svg

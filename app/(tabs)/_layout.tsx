@@ -39,6 +39,9 @@ export default function TabsLayout() {
 
   /* Guarda de conveniência — a autorização real é do backend (regra 10). */
   if (hydrated && !session) return <Redirect href="/login" />;
+  /* Repete o desvio de `app/index.tsx` para deep link não furar a tela de troca:
+     com senha provisória, tudo aqui dentro responderia 403. */
+  if (hydrated && session?.mustChangePassword) return <Redirect href="/primeiro-acesso" />;
 
   return (
     <Tabs

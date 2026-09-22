@@ -62,13 +62,17 @@ ponta.
 
 - Marca RookHub, com logo versionada em `assets/brand/`.
 - Paleta e raios em `src/theme/tokens.ts` são espelho manual da paleta usada no painel web e no
-  site institucional. O acento indigo/ciano é compromisso de marca e permanece.
-- O app tem dois esquemas de cor — escuro quase preto e claro —, com a escolha seguindo o aparelho
-  e podendo ser fixada pelo motorista no Perfil. A tela de login é sempre clara. Decisão do usuário
-  em 15/08/2026; a âncora grafite `#212121` saiu da paleta nessa mesma decisão.
+  site institucional. As âncoras são compromisso de marca: grafite `#212121`, papel morno
+  `#F4F2EF`, terracota `#D5623A` como primária e marinho `#010066` como secundária.
+- O app tem dois esquemas de cor — grafite e papel —, com a escolha seguindo o aparelho e podendo
+  ser fixada pelo motorista no Perfil. A tela de login é sempre clara. Decisão do usuário em
+  15/08/2026, com a paleta alinhada ao ecossistema em 22/09/2026: o preto de cabine e o acento
+  indigo/ciano que valiam antes saíram, e a âncora grafite entrou.
 - Referência estrutural vinculante para o redesign: `docs/design-reference/` (protótipo web). Dela
   vêm a arquitetura de tela e os padrões de componente, não as cores.
-- Tipografia escolhida pelo usuário em 15/08/2026: **Inter**, por ser neutra e desenhada para tela.
+- Tipografia espelhada do painel: **Sora** em título e **Inter** no resto, por ser neutra e
+  desenhada para tela. A Inter foi escolhida pelo usuário em 15/08/2026 e a Sora entrou em
+  22/09/2026, junto com o alinhamento de paleta. Métrica fica na Inter, que tem figura tabular.
 - Conta de demonstração fictícia: `motorista@rookhub.com` / `rookhub123`.
 
 ## Evidence on Hand

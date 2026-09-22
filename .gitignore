@@ -26,10 +26,10 @@ expo-env.d.ts
 .env
 .env.*
 
-# CLAUDE.md, memoria.md e skills são versionados: valem para o time inteiro.
-# Só as permissões ficam de fora, porque são geradas por máquina ao aceitar "allow".
-.claude/settings.json
-.claude/settings.local.json
+# O .claude subiu para a raiz do espaço de trabalho em 22/09/2026, junto com a
+# separação front/back: as instruções valem para os dois repositórios. Estas
+# linhas ficam por segurança, caso alguém recrie a pasta aqui por engano.
+.claude/
 
 # Demais agentes de IA — nada deles é versionado.
 .agents/

@@ -46,33 +46,52 @@ Claro e escuro definem **exatamente as mesmas chaves**; é isso que deixa um com
 
 | Papel            | Escuro    | Claro     | Onde                               |
 | ---------------- | --------- | --------- | ---------------------------------- |
-| `background`     | `#0A0A0A` | `#FFFFFF` | tela, cabeçalho, barra de abas     |
-| `heroSurface`    | `#1C1C1C` | `#EFF3F9` | pill e avatar dentro do cabeçalho  |
-| `sheet`          | `#121212` | `#EFF3F9` | folha de conteúdo, raio 24 no topo |
-| `surface`        | `#1C1C1C` | `#FFFFFF` | card sobre a folha                 |
-| `surfaceSunken`  | `#050505` | `#F5F8FC` | campo, trilho de progresso         |
-| `onSurface`      | `#FAFAFA` | `#0F172A` | texto principal                    |
-| `onSurfaceFaint` | `#6E6E6E` | `#9AA6B8` | placeholder de campo (login)       |
-| `outline`        | `#2E2E2E` | `#E1E7F0` | borda de card, divisor de linha    |
-| `accent`         | `#93C5FD` | `#1D4ED8` | texto e ícone de acento            |
-| `accentSolid`    | `#2563EB` | `#1D4ED8` | botão, FAB, pill ativa, progresso  |
-| `secondary`      | `#22D3EE` | `#0E7490` | estado ativo e foco                |
+| `background`     | `#212121` | `#FFFFFF` | tela, cabeçalho, barra de abas     |
+| `heroSurface`    | `#383838` | `#EAE7E2` | pill e avatar dentro do cabeçalho  |
+| `sheet`          | `#262626` | `#F4F2EF` | folha de conteúdo, raio 24 no topo |
+| `surface`        | `#2E2E2E` | `#FFFFFF` | card sobre a folha                 |
+| `surfaceSunken`  | `#171717` | `#EAE7E2` | campo, trilho de progresso         |
+| `onSurface`      | `#F0F0F2` | `#191817` | texto principal                    |
+| `onSurfaceFaint` | `#8A8A94` | `#857F75` | placeholder de campo (login)       |
+| `outline`        | `#3A3A3E` | `#E5E1DB` | borda de card, divisor de linha    |
+| `accent`         | `#D5623A` | `#D5623A` | ícone e rótulo curto de acento     |
+| `accentSolid`    | `#D5623A` | `#D5623A` | botão, FAB, pill ativa, progresso  |
+| `secondary`      | `#A0A6FF` | `#010066` | estado ativo e foco                |
 
 No escuro a folha é mais clara que o cabeçalho; no claro é mais escura. Nos dois casos ela lê como
 uma peça sobre a outra. Card e folha se separam pela borda de 1px, não pelo fundo: dois tons
 vizinhos brigam sob sol, uma linha não.
 
-**A família neutra do escuro é preta, sem matiz.** O azul-marinho `#0B1220`, herdado do painel de
-gestão, pintava de azul a tela inteira mesmo onde não havia acento; agora o chassi é acromático e
-cor só aparece como sinal. O acento continua azul e o ciano continua reservado para estado ativo —
-sobre cinza puro o indigo leria como violeta, e é essa a razão de o acento nunca ser indigo aqui. O
-login usa o trecho azul do Spectrum (paradas 3 a 5), nunca as violetas.
+**As âncoras são as do ecossistema RookHub**, as mesmas de `src/styles/palette.css` no painel de
+gestão: grafite `#212121` no escuro, papel morno `#F4F2EF` no claro, terracota `#D5623A` como
+primária e marinho `#010066` como secundária. Em 22/09/2026 o app deixou de ter paleta própria: o
+preto de cabine e o par indigo/ciano eram do desenho anterior à unificação, e duas rampas neutras
+diferentes faziam o app e o painel lerem como dois produtos na mesma operação.
 
-O fundo é preto, mas não absoluto: `#0A0A0A` mantém folha (`#121212`) e card (`#1C1C1C`)
-distinguíveis por luminância, sem o halo que o preto puro cria em volta do texto claro. O que a
-luminância não resolve, a borda de 1px resolve. Sobre o card, texto principal fica em 16:1, o
-apagado em 6,8:1 e cada par de estado — sucesso, alerta, erro, informação — passa de 5,8:1 sobre o
-próprio fundo suave.
+**A primária não troca entre os temas, e a secundária troca.** A terracota tem luminância média e
+sobrevive nos dois fundos, então é o mesmo hex nos dois. O marinho dá 15,6:1 sobre o papel e 1,07:1
+sobre o grafite, onde some por completo: por isso o escuro traz a versão clara da mesma matiz
+(`#A0A6FF`, 7,2:1) e o claro traz o `#010066`. Laranja é a cor da ação, azul escuro é a do estado
+ativo e do detalhe.
+
+**A terracota é ação, ícone e rótulo curto, nunca corpo de texto.** O painel decidiu por um laranja
+único, sem escala de apoio, e o custo de contraste veio junto: `#D5623A` dá 4,3:1 sobre o grafite e
+3,9:1 com branco por cima. Isso passa o AA de 3:1 de componente e de texto grande, e reprova o AA de
+4,5:1 de texto de corpo. Quem carrega leitura longa é a família `onSurface*`, e cor nunca é a única
+explicação de um estado.
+
+O papel morno do claro tem um grão de amarelo no neutro, e a razão é física: a tela fica aberta o
+turno inteiro sob luz fria, onde o cinza neutro lê como monitor apagado. O papel separa a folha do
+branco do card sem precisar de traço. As semânticas do claro são a família `*-on-light` do painel, e
+não o tom cheio: neste esquema elas são quase sempre texto e ícone sobre superfície clara.
+
+No escuro, a rampa é cinza puro de propósito, e o que a luminância não separa a borda de 1px separa.
+Sobre o card, texto principal fica em 12,6:1, o apagado em 4,9:1, e cada par de estado (sucesso,
+alerta, erro, informação) passa de 5:1 sobre o próprio fundo suave.
+
+O login usa o gradiente de marca (`brandGradient`): a própria terracota, clareando no topo e
+fechando embaixo. Não atravessa até o marinho porque o caminho entre as duas passa por um marrom
+arroxeado que não é cor de marca nenhuma.
 
 ## Como o esquema é escolhido
 
@@ -88,19 +107,29 @@ componente. `StyleSheet.create` no topo do arquivo só para o que não tem cor.
 
 ## Tipografia
 
-Inter, quatro pesos carregados por subcaminho em [`app/_layout.tsx`](../app/_layout.tsx). Uma família
-para toda a interface. Cada degrau nomeia o arquivo do seu peso e nenhum estilo declara
-`fontWeight` — no Android o peso não é sintetizado sobre uma família já específica.
+Duas famílias, as mesmas do painel de gestão: **Sora** escreve título e **Inter** escreve tudo o que
+se lê de fato. Sete pesos ao todo, carregados por subcaminho em
+[`app/_layout.tsx`](../app/_layout.tsx). Cada degrau nomeia o arquivo do seu peso e nenhum estilo
+declara `fontWeight` — no Android o peso não é sintetizado sobre uma família já específica.
 
-| Degrau        | Tamanho/linha | Uso                                      |
-| ------------- | ------------- | ---------------------------------------- |
-| `displayLg`   | 40/46 bold    | score de segurança                       |
-| `headlineMd`  | 23/30 semi    | título do cabeçalho, destino em destaque |
-| `titleMd`     | 17/23 semi    | título de card e de seção                |
-| `metricLg/Md` | 26/32, 19/25  | valor operacional (R$, km, km/l, %)      |
-| `bodyLg/Md`   | 17/26, 15/22  | texto corrido                            |
-| `labelMd/Sm`  | 13/18, 12/16  | rótulo, meta, prazo                      |
-| `overline`    | 11/14 semi    | rótulo de métrica e de campo, caixa alta |
+Sora é geométrica e de caixa larga: ótima em duas ou três palavras, cansativa em parágrafo. Por isso
+ela fica só nos três degraus de cima, e a entrelinha deles é dois pontos maior que a da versão
+anterior, porque a altura-x da Sora é maior que a da Inter e o título de duas linhas encostava.
+
+**Métrica continua na Inter, de propósito.** O valor operacional é o conteúdo mais lido da tela e sai
+tabular, e é a Inter que tem essa figura desenhada. Número em Sora salta de largura a cada dígito e
+faz a coluna dançar quando a jornada atualiza.
+
+| Degrau        | Tamanho/linha   | Uso                                      |
+| ------------- | --------------- | ---------------------------------------- |
+| `displayLg`   | 40/48 Sora bold | score de segurança                       |
+| `headlineLg`  | 30/39 Sora bold | título de tela cheia                     |
+| `headlineMd`  | 23/31 Sora semi | título do cabeçalho, destino em destaque |
+| `titleMd`     | 17/23 semi      | título de card e de seção                |
+| `metricLg/Md` | 26/32, 19/25    | valor operacional (R$, km, km/l, %)      |
+| `bodyLg/Md`   | 17/26, 15/22    | texto corrido                            |
+| `labelMd/Sm`  | 13/18, 12/16    | rótulo, meta, prazo                      |
+| `overline`    | 11/14 semi      | rótulo de métrica e de campo, caixa alta |
 
 `metric*` e `displayLg` saem tabulares sem ninguém pedir: número que muda de largura mente ao olho.
 
@@ -115,7 +144,7 @@ Todos em [`src/components/ui/`](../src/components/ui/). Nenhuma tela desenha sua
 - **`MetricStrip`** — três números do período em uma peça dividida por fios, não três cartões.
 - **`SectionHeader`** — título, descrição opcional e contagem em pill. Sem rótulo acima do título.
 - **`Card` / `HeroCard`** — card da folha e card do cabeçalho.
-- **`FilterPills`** — filtro que sangra até a borda; azul cheio marca a seleção.
+- **`FilterPills`** — filtro que sangra até a borda; terracota cheia marca a seleção.
 - **`Chip`** — estado semântico; cada tom tem texto e fundo suave próprios do esquema.
 - **`Field`** — poço: o campo é a superfície recuada dentro do card.
 - **`RewardCard`** (feature performance) — estimativa, ranking, próxima faixa e regras do período.

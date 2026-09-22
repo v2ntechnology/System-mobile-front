@@ -8,12 +8,12 @@
     "orientation": "portrait",
     "icon": "./assets/logo-rookhub-white-html.png",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#0A0A0A",
+    "backgroundColor": "#212121",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/logo-rookhub-white.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0A0A0A"
+      "backgroundColor": "#212121"
     },
     "ios": {
       "supportsTablet": false,
@@ -22,7 +22,7 @@
     "android": {
       "package": "com.rookhub.driver",
       "adaptiveIcon": {
-        "backgroundColor": "#0A0A0A",
+        "backgroundColor": "#212121",
         "foregroundImage": "./assets/logo-rookhub-white-html-foreground.png",
         "monochromeImage": "./assets/logo-rookhub-white-html-monochrome.png"
       },
@@ -43,6 +43,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "_comment": "Endereço do BFF na build de loja. Em desenvolvimento quem manda é EXPO_PUBLIC_API_URL; este valor é o fallback de quem compilou sem a variável. Endereço, nunca segredo: tudo aqui vai para dentro do bundle.",
+      "apiBaseUrl": null
     }
   }
 }

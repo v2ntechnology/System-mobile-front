@@ -4,16 +4,11 @@ export function delay(ms = 900): Promise<void> {
 }
 
 /**
- * Erro no padrão RFC 9457 (Problem Details) — mesma forma que o backend usará (BE-04).
- * Idêntico ao do painel de propósito: os dois apps falam com o mesmo servidor.
+ * O `ApiError` mudou de casa em 22/09/2026 e agora mora em `@/lib/api-error`.
+ *
+ * Erro deixou de ser coisa de mock quando o app ganhou HTTP de verdade. A reexportação
+ * fica aqui para os mocks que sobreviveram continuarem valendo sem edição, e existe
+ * uma classe só: dois `ApiError` com o mesmo nome e formas diferentes fariam o
+ * `instanceof` do cliente HTTP falhar exatamente no erro que veio do mock.
  */
-export class ApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly title: string,
-    readonly detail?: string,
-  ) {
-    super(detail ?? title);
-    this.name = "ApiError";
-  }
-}
+export { ApiError } from "@/lib/api-error";

@@ -1,10 +1,13 @@
 /* Import por subcaminho, não pelo índice do pacote: o índice arrasta as 18
-   variantes da Inter (~6 MB) para dentro do bundle. Aqui entram só os 4 pesos
-   que a escala do tema usa. */
+   variantes da Inter (~6 MB) para dentro do bundle. Aqui entram só os pesos que
+   a escala do tema usa, de cada uma das duas famílias. */
 import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
 import { Inter_500Medium } from "@expo-google-fonts/inter/500Medium";
 import { Inter_600SemiBold } from "@expo-google-fonts/inter/600SemiBold";
 import { Inter_700Bold } from "@expo-google-fonts/inter/700Bold";
+import { Sora_500Medium } from "@expo-google-fonts/sora/500Medium";
+import { Sora_600SemiBold } from "@expo-google-fonts/sora/600SemiBold";
+import { Sora_700Bold } from "@expo-google-fonts/sora/700Bold";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -47,6 +50,9 @@ export default function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    Sora_500Medium,
+    Sora_600SemiBold,
+    Sora_700Bold,
   });
 
   useEffect(() => {
@@ -98,6 +104,12 @@ function RootNavigator() {
           }}
         >
           <Stack.Screen name="login" options={{ headerShown: false }} />
+          {/* Sem header: não há para onde voltar. A sessão existe e não serve para
+              nada até a senha provisória ser trocada, e a saída é "entrar com outra
+              conta", que a própria tela oferece. */}
+          <Stack.Screen name="primeiro-acesso" options={{ headerShown: false }} />
+          {/* Só repassa os parâmetros do deep link para o login. Nunca é vista. */}
+          <Stack.Screen name="acesso" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           {/* Nome da rota em inglês, título em pt-BR: o caminho é código, o texto é interface. */}
           <Stack.Screen name="checklist" options={{ title: "Checklist pré-viagem" }} />

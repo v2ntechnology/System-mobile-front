@@ -23,7 +23,7 @@ export function RewardCard({ reward, score, detailed = false }: Props) {
   return (
     <LinearGradient
       accessibilityLabel={`Premiação estimada de ${formatCurrency(reward.estimatedAmount)} com score ${score}`}
-      colors={[theme.spectrumStops[3], theme.spectrumStops[4], theme.spectrumStops[5]]}
+      colors={[...theme.brandGradient]}
       end={{ x: 1, y: 1 }}
       start={{ x: 0, y: 0 }}
       style={[styles.card, !detailed && styles.cardCompact]}

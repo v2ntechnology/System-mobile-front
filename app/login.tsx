@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useState, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useState, type ComponentProps, type ReactNode } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   KeyboardAvoidingView,
@@ -17,12 +17,13 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { RookhubMark } from "@/components/brand/rookhub-mark";
+import { RookhubLogo } from "@/components/brand/rookhub-logo";
 import { Button, Field, Text } from "@/components/ui";
 import { login } from "@/features/auth/api";
 import { loginSchema, type LoginValues } from "@/features/auth/schema";
 import { useAuthStore } from "@/features/auth/store";
-import { ForceScheme, theme, useColors, useThemedStyles, type Scheme } from "@/theme";
+import { guardarUltimaEmpresa, lerUltimaEmpresa } from "@/lib/storage";
+import { ForceScheme, HIT_TARGET, theme, useColors, useThemedStyles, type Scheme } from "@/theme";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -93,18 +94,58 @@ function LoginForm() {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  /* Lembrado de um login anterior. Enquanto houver, o campo Empresa fica recolhido. */
+  const [empresaLembrada, setEmpresaLembrada] = useState<string | null>(null);
 
   const { control, handleSubmit, formState, setValue, clearErrors } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { tenantSlug: "", email: "", password: "" },
   });
+
+  /*
+   * O deep link do e-mail de primeiro acesso (`rookhub://acesso?empresa=&email=`)
+   * chega aqui como parâmetro de rota e vence o que estava lembrado: quem clicou no
+   * link está entrando pela primeira vez, ou trocando de empresa.
+   */
+  const { empresa: empresaDoLink, email: emailDoLink } = useLocalSearchParams<{
+    empresa?: string;
+    email?: string;
+  }>();
+
+  useEffect(() => {
+    let vivo = true;
+
+    if (empresaDoLink) {
+      setValue("tenantSlug", empresaDoLink.toLowerCase());
+      setEmpresaLembrada(empresaDoLink.toLowerCase());
+      if (emailDoLink) setValue("email", emailDoLink);
+      return;
+    }
+
+    void lerUltimaEmpresa().then((slug) => {
+      if (!vivo || !slug) return;
+      setValue("tenantSlug", slug);
+      setEmpresaLembrada(slug);
+    });
+
+    return () => {
+      vivo = false;
+    };
+  }, [empresaDoLink, emailDoLink, setValue]);
 
   async function onSubmit(values: LoginValues) {
     setSubmitting(true);
     setFormError(null);
     try {
-      const session = await login(values.email, values.password);
+      const session = await login(values.tenantSlug, values.email, values.password);
+      /* Só lembra o que funcionou: slug digitado errado não volta na próxima vez. */
+      await guardarUltimaEmpresa(values.tenantSlug);
       setSession(session);
+      /*
+       * `/` decide para onde ir, e a decisão inclui o desvio de senha provisória.
+       * ⚠️ Nenhuma chamada de API entre aqui e lá: com `mustChangePassword`, tudo
+       * menos trocar a senha responde 403, e o erro apareceria como falha genérica.
+       */
       router.replace("/");
     } catch (error) {
       setFormError(
@@ -115,24 +156,31 @@ function LoginForm() {
     }
   }
 
+  /** Devolve o campo Empresa à tela, para quem dirige para mais de uma transportadora. */
+  function trocarEmpresa() {
+    setEmpresaLembrada(null);
+    setValue("tenantSlug", "", { shouldDirty: true });
+  }
+
   function fillDemoCredentials() {
     setFormError(null);
     clearErrors();
+    setValue("tenantSlug", "servioeste", { shouldDirty: true, shouldValidate: true });
     setValue("email", "motorista@rookhub.com", { shouldDirty: true, shouldValidate: true });
     setValue("password", "rookhub123", { shouldDirty: true, shouldValidate: true });
   }
 
   // O gradiente cobre o topo da tela inteira e se dissolve no fundo, sem bloco:
   // a altura acompanha o aparelho para a marca ficar centrada na área colorida.
-  const spectrumHeight = Math.max(300, height * 0.4);
+  const brandHeight = Math.max(300, height * 0.4);
 
   return (
     <View style={styles.root}>
-      <View style={[styles.backdrop, { height: spectrumHeight }]}>
-        {/* Trecho azul do Spectrum: o violeta das primeiras paradas é da marca,
-            não deste produto — o app do motorista é azul. */}
+      <View style={[styles.backdrop, { height: brandHeight }]}>
+        {/* Gradiente de marca: a terracota da RookHub, clareando no topo e
+            fechando embaixo. É a mesma cor da ação, com profundidade. */}
         <LinearGradient
-          colors={[theme.spectrumStops[3], theme.spectrumStops[4], theme.spectrumStops[5]]}
+          colors={[...theme.brandGradient]}
           end={{ x: 1, y: 1 }}
           start={{ x: 0, y: 0 }}
           style={StyleSheet.absoluteFill}
@@ -163,16 +211,18 @@ function LoginForm() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.shell}>
-            <View style={[styles.brand, { height: spectrumHeight * 0.72 }]}>
-              <RookhubMark height={54} />
-              <View style={styles.brandCopy}>
-                <Text tone="onAccent" variant="labelMd" style={styles.brandName}>
-                  ROOKHUB
-                </Text>
-                <Text tone="onAccent" variant="labelSm" style={styles.brandProduct}>
-                  APP DO MOTORISTA
-                </Text>
-              </View>
+            <View style={[styles.brand, { height: brandHeight * 0.72 }]}>
+              {/* Assinatura chapada no branco: o destaque em terracota do lockup
+                  sumiria por cima do gradiente, que é terracota também. É o caso
+                  de uma cor só que o componente documenta. */}
+              <RookhubLogo
+                accentColor={colors.onAccentSolid}
+                color={colors.onAccentSolid}
+                height={44}
+              />
+              <Text tone="onAccent" variant="labelSm" style={styles.brandProduct}>
+                APP DO MOTORISTA
+              </Text>
             </View>
 
             <View style={styles.body}>
@@ -185,6 +235,47 @@ function LoginForm() {
                     </Text>
                   </View>
                 ) : null}
+
+                {/* A empresa vem primeiro: é ela que escolhe onde as credenciais
+                    abaixo serão procuradas. Recolhida quando já é conhecida, porque
+                    o motorista digita a mesma todo dia. */}
+                {empresaLembrada ? (
+                  <View style={styles.empresaLembrada}>
+                    <Ionicons color={colors.onSurfaceMuted} name="business-outline" size={18} />
+                    <Text tone="variant" variant="labelMd" style={styles.empresaNome}>
+                      {empresaLembrada}
+                    </Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={submitting}
+                      hitSlop={12}
+                      onPress={trocarEmpresa}
+                    >
+                      <Text tone="accent" variant="labelMd">
+                        Trocar
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <Controller
+                    control={control}
+                    name="tenantSlug"
+                    render={({ field }) => (
+                      <AuthField
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        editable={!submitting}
+                        error={formState.errors.tenantSlug?.message}
+                        icon="business-outline"
+                        label="Empresa"
+                        onBlur={field.onBlur}
+                        onChangeText={(texto) => field.onChange(texto.trim().toLowerCase())}
+                        placeholder="código da transportadora"
+                        value={field.value}
+                      />
+                    )}
+                  />
+                )}
 
                 <Controller
                   control={control}
@@ -308,13 +399,23 @@ const makeStyles = (colors: Scheme) =>
     },
     shell: { flexGrow: 1, width: "100%", maxWidth: 520, alignSelf: "center" },
     brand: { alignItems: "center", justifyContent: "center", gap: theme.space.md },
-    brandCopy: { alignItems: "center" },
-    brandName: { fontFamily: theme.fonts.bold, letterSpacing: 2.4 },
-    brandProduct: { marginTop: 2, opacity: 0.82, letterSpacing: 1.2 },
+    brandProduct: { opacity: 0.88, letterSpacing: 1.2, textTransform: "uppercase" },
     // Cresce até o rodapé sem comprimir os campos com o teclado aberto; o formulário
     // fica logo abaixo da marca e a folga sobrante cai antes do rodapé.
     body: { flexGrow: 1, paddingTop: theme.space.md, paddingBottom: theme.space.xl },
     form: { gap: 18 },
+    // Linha discreta, e não um campo: a empresa já está resolvida e não é o assunto
+    // da tela. Vira campo de novo só quando o motorista toca em "Trocar".
+    empresaLembrada: {
+      minHeight: HIT_TARGET,
+      paddingHorizontal: theme.space.md,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.space.sm,
+      borderRadius: theme.radius.pill,
+      backgroundColor: colors.surfaceSunken,
+    },
+    empresaNome: { flex: 1 },
     authField: { gap: theme.space.sm },
     fieldLabel: { paddingHorizontal: theme.space.xs },
     inputWrap: { position: "relative" },

@@ -1,4 +1,4 @@
-import { radius, spectrumStops } from "./tokens";
+import { brandGradient, radius } from "./tokens";
 
 /*
  * CONTRATO DE DIREÇÃO — app do motorista RookHub
@@ -7,10 +7,11 @@ import { radius, spectrumStops } from "./tokens";
  * ele é e o que a operação exige agora, e a folha que sobe por cima e carrega o
  * trabalho e os números. Recusa a tela plana onde bloqueio, viagem e rodapé
  * pesam igual.
- * OWN-WORLD: dois esquemas com os mesmos papéis — quase preto de cabine noturna
- * (#0B0D12) e branco de pátio ao meio-dia. A folha sempre contrasta com o
- * cabeçalho; card com borda de 1px, indigo para ação e seleção, ciano só para
- * estado ativo, Inter em tudo, número sempre tabular.
+ * OWN-WORLD: dois esquemas com os mesmos papéis, e as mesmas âncoras do painel
+ * de gestão: grafite #212121 no escuro, papel morno #F4F2EF no claro, terracota
+ * #D5623A para ação e marinho para estado ativo. A folha sempre contrasta com o
+ * cabeçalho; card com borda de 1px, Sora nos títulos, Inter no corpo, número
+ * sempre tabular.
  * STORY: abriu, se reconhece no cabeçalho, entende a recompensa do período e
  * enxerga a rota que está dirigindo; desceu, encontra ações e explicações.
  * FIRST VIEWPORT: saudação e veículo no cabeçalho, premiação ligada ao score e
@@ -20,7 +21,6 @@ import { radius, spectrumStops } from "./tokens";
  * FINISH: unreviewed and undocumented is unfinished; this build ends with the
  * finish review, the verdict, and docs/DESIGN.md.
  */
-
 /**
  * Estrutura do tema: o que **não** muda entre claro e escuro.
  *
@@ -30,23 +30,35 @@ import { radius, spectrumStops } from "./tokens";
  */
 
 /**
- * Famílias da Inter, uma por peso.
+ * Famílias, uma por peso.
  *
  * Em React Native o peso não é sintetizado a partir de um arquivo: no Android,
  * `fontWeight` sobre uma família já específica é ignorado e o texto volta ao
  * Regular. Por isso cada degrau da escala nomeia o arquivo do seu peso e nenhum
  * estilo abaixo declara `fontWeight`.
+ *
+ * O par é o mesmo do painel de gestão: **Sora** escreve título, e **Inter**
+ * escreve tudo o que se lê de fato. Sora é geométrica e de caixa larga, ótima
+ * em duas ou três palavras e cansativa em parágrafo.
+ *
+ * ⚠️ MÉTRICA CONTINUA NA INTER, de propósito. O valor operacional é o conteúdo
+ * mais lido da tela e sai tabular (`fontVariant: tabular-nums`), e é a Inter que
+ * tem essa figura desenhada. Número em Sora salta de largura a cada dígito e faz
+ * a coluna dançar quando a jornada atualiza.
  */
 const fonts = {
   regular: "Inter_400Regular",
   medium: "Inter_500Medium",
   semibold: "Inter_600SemiBold",
   bold: "Inter_700Bold",
+  displayMedium: "Sora_500Medium",
+  displaySemibold: "Sora_600SemiBold",
+  displayBold: "Sora_700Bold",
 } as const;
 
 export const theme = {
   radius,
-  spectrumStops,
+  brandGradient,
   fonts,
 
   /** Escala de espaçamento em múltiplos de 4, igual à do Tailwind. */
@@ -63,12 +75,26 @@ export const theme = {
   /**
    * Escala de produto: razão curta (~1,15) e muitos degraus, porque a tela tem
    * mais rótulo e número do que prosa. `metric*` existe separado do corpo porque
-   * valor operacional é conteúdo, não decoração — e sempre sai tabular.
+   * valor operacional é conteúdo, não decoração, e sempre sai tabular.
+   *
+   * Os três degraus de cima são Sora e o resto é Inter. A entrelinha deles subiu
+   * dois pontos junto com a troca: a Sora tem altura-x maior que a Inter e o
+   * título de duas linhas encostava.
    */
   text: {
-    displayLg: { fontSize: 40, lineHeight: 46, fontFamily: fonts.bold, letterSpacing: -1.2 },
-    headlineLg: { fontSize: 30, lineHeight: 38, fontFamily: fonts.bold, letterSpacing: -0.8 },
-    headlineMd: { fontSize: 23, lineHeight: 30, fontFamily: fonts.semibold, letterSpacing: -0.5 },
+    displayLg: { fontSize: 40, lineHeight: 48, fontFamily: fonts.displayBold, letterSpacing: -1.2 },
+    headlineLg: {
+      fontSize: 30,
+      lineHeight: 39,
+      fontFamily: fonts.displayBold,
+      letterSpacing: -0.8,
+    },
+    headlineMd: {
+      fontSize: 23,
+      lineHeight: 31,
+      fontFamily: fonts.displaySemibold,
+      letterSpacing: -0.5,
+    },
     titleMd: { fontSize: 17, lineHeight: 23, fontFamily: fonts.semibold, letterSpacing: -0.2 },
     metricLg: { fontSize: 26, lineHeight: 32, fontFamily: fonts.bold, letterSpacing: -0.6 },
     metricMd: { fontSize: 19, lineHeight: 25, fontFamily: fonts.bold, letterSpacing: -0.3 },
@@ -104,4 +130,4 @@ export {
   type SchemeName,
 } from "./provider";
 export { useThemeMode, useThemeStore, type ThemeMode } from "./store";
-export type { Scheme } from "./tokens";
+export { brandGradient, type Scheme } from "./tokens";

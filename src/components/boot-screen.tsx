@@ -1,6 +1,6 @@
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-import { RookhubMark } from "@/components/brand/rookhub-mark";
+import { RookhubLogo } from "@/components/brand/rookhub-logo";
 import { theme, useColors } from "@/theme";
 
 /**
@@ -11,8 +11,10 @@ import { theme, useColors } from "@/theme";
  * marca continua, mas com um indicador girando — a mesma tela no Android, no iOS
  * e no preview.
  *
- * Sem texto de propósito: esta tela aparece antes de a Inter estar em memória, e
- * qualquer palavra aqui refluiria assim que a fonte trocasse.
+ * Sem texto de propósito: esta tela aparece antes de a Inter e a Sora estarem em
+ * memória, e qualquer palavra aqui refluiria assim que a fonte trocasse. A
+ * palavra "RookHub" que aparece é desenho vetorial dentro do logo, não texto, e
+ * por isso não depende de fonte nenhuma.
  */
 export function BootScreen() {
   const colors = useColors();
@@ -23,7 +25,7 @@ export function BootScreen() {
       accessibilityRole="progressbar"
       style={[styles.root, { backgroundColor: colors.background }]}
     >
-      <RookhubMark height={72} color={colors.onSurface} />
+      <RookhubLogo height={44} />
       <ActivityIndicator color={colors.accent} size="small" />
     </View>
   );

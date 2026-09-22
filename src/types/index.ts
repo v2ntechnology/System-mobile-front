@@ -27,37 +27,69 @@
  */
 export type Role = "OWNER" | "MANAGER" | "OPERATOR" | "MAINTENANCE" | "SUPER_ADMIN" | "DRIVER";
 
-/** Módulos contratáveis por plano (RF-002 / tenant_modules). */
-export type Module =
-  "FLEET" | "TRIPS" | "CHECKLIST" | "COSTS" | "MAINTENANCE" | "SAFETY" | "ASSISTANT";
-
+/**
+ * A empresa, exatamente como o `TenantSummary` do servidor a entrega.
+ *
+ * ⚠️ O `slug` é o código que o motorista digita no campo "Empresa" do login, e é o
+ * mesmo que vai no e-mail de primeiro acesso. Guardado depois do primeiro login para
+ * o campo sumir das próximas vezes.
+ */
 export interface Tenant {
   id: string;
   name: string;
-  /** Módulos efetivamente contratados — base do gate de entitlement (RF-002). */
-  modules: Module[];
+  slug: string;
+  plan: string;
+  status: string;
 }
 
+/**
+ * A conta, exatamente como o `UserSummary` do servidor a entrega.
+ *
+ * ⚠️ Em 22/09/2026 saíram daqui `modules`, `operatorSeesFinancials`, `mfaEnabled`,
+ * `avatarUrl` e `driverId`. Eles vinham do desenho anterior ao contrato real e nunca
+ * tiveram origem: só o mock os preenchia, e nenhuma tela chegou a lê-los. Manter
+ * campo que o servidor não manda cria a ilusão de um gate que não existe.
+ *
+ * O `driverId` em especial não faz falta: quem resolve o motorista a partir da conta
+ * é o servidor, dentro do vínculo e da submissão do checklist. O app nunca precisa
+ * mandá-lo, e mandar seria dar ao aparelho a escolha de qual motorista ele é.
+ */
 export interface User {
   id: string;
   name: string;
   email: string;
   role: Role;
   tenantId: string;
-  avatarUrl?: string;
-  /** RF-007 — controla se OPERATOR enxerga valores financeiros. */
-  operatorSeesFinancials: boolean;
-  mfaEnabled: boolean;
-  /** Só em contas DRIVER: cadastro correspondente em `drivers`. */
-  driverId?: string;
 }
 
 export interface Session {
   user: User;
   tenant: Tenant;
-  /** JWT de acesso — 15 min (BE-11). Mockado nesta fase. */
+  /** JWT de acesso, com validade de 60 min. Renovado pelo `refreshToken`. */
   accessToken: string;
   expiresAt: string;
+  /**
+   * O refresh, que no app vem **no corpo** da resposta e não em cookie.
+   *
+   * ⚠️ O servidor só o entrega assim para quem manda `X-Rookhub-Client: mobile`, que
+   * é o BFF. O painel web continua recebendo cookie `httpOnly`, e lá o campo vem nulo.
+   * O motivo: o argumento do `httpOnly` é XSS no DOM, e não há DOM aqui; o análogo
+   * correto no aparelho é o keychain, que é onde a store guarda.
+   *
+   * ⚠️ O servidor **rotaciona** a cada uso: renovar duas vezes em paralelo invalida a
+   * sessão. Ver a renovação em voo único em `src/lib/http.ts`.
+   */
+  refreshToken: string;
+  /**
+   * Senha provisória ainda não trocada.
+   *
+   * ⚠️ Enquanto for verdadeiro, **toda** rota da API responde 403 menos trocar senha,
+   * ver a sessão, renovar e sair. Por isso o app decide o desvio para
+   * `/primeiro-acesso` por este campo, **antes de chamar qualquer outra coisa**:
+   * chamar a home primeiro devolveria um 403 vindo de dentro da agregação, e a tela
+   * mostraria erro genérico no lugar do caminho de saída.
+   */
+  mustChangePassword: boolean;
 }
 
 /* -------------------------------------------------------------------------- */
