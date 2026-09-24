@@ -19,6 +19,7 @@ import { advanceTrip, getHome } from "@/features/journey/api";
 import { RouteMapCard } from "@/features/journey/components/route-map-card";
 import { TripCard } from "@/features/journey/components/trip-card";
 import { RewardCard } from "@/features/performance/components/reward-card";
+import { useCurrentBinding } from "@/features/vehicle/hooks";
 import { daysUntil, formatDate, formatKm, formatLongDate } from "@/lib/format";
 import { TRIP_STATUS } from "@/lib/trip-status";
 import { HIT_TARGET, theme, useColors, useThemedStyles, type Scheme } from "@/theme";
@@ -39,6 +40,9 @@ export default function HomeScreen() {
   const colors = useColors();
   const styles = useThemedStyles(makeStyles);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  /* O caminhão de agora. Sem ele a tela não tem checklist para oferecer. */
+  const { data: vinculo } = useCurrentBinding();
 
   const home = useQuery({ queryKey: ["driver-home"], queryFn: getHome });
 
@@ -80,7 +84,7 @@ export default function HomeScreen() {
       hero={
         <HeroBar
           title={`${greeting()}, ${firstName}`}
-          subtitle={`${formatLongDate(new Date())}${driver.currentVehiclePlate ? ` · ${driver.currentVehiclePlate}` : ""}`}
+          subtitle={`${formatLongDate(new Date())}${vinculo ? ` · ${vinculo.veiculo.plate}` : ""}`}
           trailing={
             <Pressable
               accessibilityLabel="Abrir perfil"
@@ -94,6 +98,29 @@ export default function HomeScreen() {
         />
       }
     >
+      {/*
+        ⚠️ SEM VÍNCULO, ESTE É O PRIMEIRO CARTÃO DA TELA, acima do bloqueio e da
+        premiação. Sem caminhão identificado não há checklist para liberar e não há
+        jornada para começar: qualquer outra coisa no topo seria o app pedindo que o
+        motorista resolva o que ainda não pode.
+      */}
+      {!vinculo ? (
+        <Card style={styles.semVinculo}>
+          <View style={styles.alertHead}>
+            <View style={[styles.alertIcon, { backgroundColor: colors.accentSoft }]}>
+              <Ionicons name="qr-code-outline" size={21} color={colors.accent} />
+            </View>
+            <View style={styles.alertCopy}>
+              <Text variant="titleMd">Escaneie o caminhão</Text>
+              <Text variant="labelMd" tone="variant">
+                Leia o QR colado no veículo que você vai dirigir hoje. É o que libera o checklist.
+              </Text>
+            </View>
+          </View>
+          <Button label="Abrir a câmera" onPress={() => router.push("/scanner")} shape="pill" />
+        </Card>
+      ) : null}
+
       {/* Bloqueio de segurança sempre precede conteúdo financeiro e operacional. */}
       {data.blockedByChecklist ? (
         <Card style={styles.alertCritical}>
@@ -124,8 +151,7 @@ export default function HomeScreen() {
             <View style={styles.alertCopy}>
               <Text variant="titleMd">Checklist antes de sair</Text>
               <Text variant="labelMd" tone="variant">
-                Confirme os itens do {driver.currentVehiclePlate ?? "veículo"} para liberar a
-                jornada.
+                Confirme os itens do {vinculo?.veiculo.plate ?? "caminhão"} para liberar a jornada.
               </Text>
             </View>
           </View>
@@ -288,6 +314,11 @@ function QuickAction({
 const makeStyles = (colors: Scheme) =>
   StyleSheet.create({
     section: { gap: theme.space.md },
+    semVinculo: {
+      gap: theme.space.md,
+      borderColor: colors.accent,
+      borderWidth: StyleSheet.hairlineWidth,
+    },
     profileButton: {
       width: HIT_TARGET,
       height: HIT_TARGET,

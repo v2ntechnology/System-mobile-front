@@ -14,6 +14,53 @@
  */
 
 /* -------------------------------------------------------------------------- */
+/* Veículo e vínculo                                                          */
+/* -------------------------------------------------------------------------- */
+
+/** Tipo do veículo, como o cadastro da frota o classifica. Decide o checklist. */
+export type VehicleType = "truck" | "tractor_unit" | "trailer" | "van" | "light";
+
+export interface Vehicle {
+  id: string;
+  plate: string;
+  /** Número de frota, quando a transportadora usa. Costuma vir vazio. */
+  fleetNumber?: string | null;
+  type: VehicleType;
+  model?: string | null;
+}
+
+/**
+ * O caminhão que o motorista está dirigindo agora.
+ *
+ * ⚠️ Não é cadastro nem preferência: é o turno em curso, aberto ao escanear o QR do
+ * adesivo e fechado ao encerrar, ao trocar de caminhão ou quando outro motorista
+ * assume. O histórico fica no servidor, e é dele que o gestor lê o rodízio.
+ *
+ * Nada no app funciona sem isto: o checklist só é liberado para o veículo vinculado.
+ */
+export interface VehicleBinding {
+  id: string;
+  veiculo: Vehicle;
+  driverId: string;
+  driverName: string;
+  abertoEm: string;
+  odometroKm?: number | null;
+}
+
+/**
+ * O que o 409 de caminhão ocupado carrega, nas propriedades do Problem Details.
+ *
+ * ⚠️ Vem no próprio erro de propósito. Sem estes campos a folha de confirmação
+ * precisaria de uma segunda chamada, que no 3G do pátio é mais uma espera antes de
+ * uma decisão que o motorista já quer tomar.
+ */
+export interface VehicleTakeover {
+  motoristaAtual: string;
+  desde: string;
+  placa: string;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Identidade e sessão                                                         */
 /* -------------------------------------------------------------------------- */
 
@@ -368,8 +415,15 @@ export interface DriverChecklistSection {
 export interface DriverChecklistTemplate {
   id: string;
   name: string;
-  /** Gravada em cada preenchimento (RN-033) — o template muda, o histórico não. */
-  version: string;
+  /**
+   * Gravada em cada preenchimento: o template muda, o histórico não.
+   *
+   * ⚠️ Número, e não texto (era `"v4"` no mock). O servidor compara a versão enviada
+   * com a do modelo ativo e recusa submissão de versão velha, que é o caso do
+   * motorista que deixou a tela aberta enquanto o gestor publicou a versão 2. Texto
+   * livre não se compara, e "v10" viria antes de "v9" em qualquer ordenação.
+   */
+  version: number;
   sections: DriverChecklistSection[];
 }
 
@@ -383,7 +437,7 @@ export interface DriverChecklistAnswer {
 
 export interface DriverChecklistSubmission {
   templateId: string;
-  templateVersion: string;
+  templateVersion: number;
   plate: string;
   tripId?: string;
   /** Relógio do aparelho (RN-054) — o servidor carimba o dele na chegada. */

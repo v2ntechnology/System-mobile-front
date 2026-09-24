@@ -167,7 +167,7 @@ function LoginForm() {
     clearErrors();
     setValue("tenantSlug", "servioeste", { shouldDirty: true, shouldValidate: true });
     setValue("email", "motorista@rookhub.com", { shouldDirty: true, shouldValidate: true });
-    setValue("password", "rookhub123", { shouldDirty: true, shouldValidate: true });
+    setValue("password", "12345678", { shouldDirty: true, shouldValidate: true });
   }
 
   // O gradiente cobre o topo da tela inteira e se dissolve no fundo, sem bloco:

@@ -189,8 +189,24 @@ cd System-mobile
 # 2. Instalar dependências
 npm install
 
-# 3. Subir o servidor de desenvolvimento
+# 3. Criar a configuração local do BFF
+printf 'EXPO_PUBLIC_API_URL=http://localhost:8090\n' > .env
+
+# 4. Subir o servidor de desenvolvimento
 npm run dev
+```
+
+`EXPO_PUBLIC_API_URL` é o endereço do **BFF** (`System-mobile-back`), nunca do
+`Backend-web`. O arquivo `.env` é local e ignorado pelo Git. Em um celular físico,
+troque `localhost` pelo IP da máquina na mesma rede Wi-Fi, por exemplo
+`http://192.168.0.10:8090`.
+
+Para gerar uma build de produção, informe o domínio público do BFF. A exportação
+falha de propósito se a variável estiver ausente, usar HTTP ou apontar para uma
+rede local:
+
+```bash
+EXPO_PUBLIC_API_URL=https://api-app.rookhub.com.br npm run export:android
 ```
 
 Com o servidor no ar, use os atalhos do terminal:

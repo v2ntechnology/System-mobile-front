@@ -73,7 +73,7 @@ ponta.
 - Tipografia espelhada do painel: **Sora** em título e **Inter** no resto, por ser neutra e
   desenhada para tela. A Inter foi escolhida pelo usuário em 15/08/2026 e a Sora entrou em
   22/09/2026, junto com o alinhamento de paleta. Métrica fica na Inter, que tem figura tabular.
-- Conta de demonstração fictícia: `motorista@rookhub.com` / `rookhub123`.
+- Conta de demonstração de desenvolvimento: `motorista@rookhub.com` / `12345678`.
 
 ## Evidence on Hand
 

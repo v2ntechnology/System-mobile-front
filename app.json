@@ -39,13 +39,21 @@
           "microphonePermission": false
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O RookHub usa a câmera para ler o QR Code colado no caminhão e identificar qual veículo você vai dirigir.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
       "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "_comment": "Endereço do BFF na build de loja. Em desenvolvimento quem manda é EXPO_PUBLIC_API_URL; este valor é o fallback de quem compilou sem a variável. Endereço, nunca segredo: tudo aqui vai para dentro do bundle.",
+      "_comment": "apiBaseUrl e PREENCHIDO por app.config.js, a partir de EXPO_PUBLIC_API_URL, no momento do build. Nao edite o valor aqui: ele e sobrescrito. Em build de producao, a variavel ausente ou apontando para rede local FAZ O BUILD FALHAR, de proposito. Endereco, nunca segredo: tudo que fica em `extra` vai para dentro do bundle.",
       "apiBaseUrl": null
     }
   }

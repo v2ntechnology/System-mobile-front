@@ -17,14 +17,12 @@ import { ApiError, problemDetailsParaErro } from "@/lib/api-error";
 /**
  * Endereço do BFF.
  *
- * `EXPO_PUBLIC_*` é embutido no bundle pelo SDK, então serve para endereço e nunca
- * para segredo. O `extra` do `app.json` é o segundo caminho, para a build de loja,
- * onde a variável de ambiente da máquina de quem compilou não existe.
+ * A variável de ambiente é lida uma única vez pelo `app.config.js`, que a grava em
+ * `extra.apiBaseUrl` na configuração que acompanha a build. Não a lemos direto
+ * aqui: o carregamento de `.env` do Expo durante o bundling pode divergir do
+ * ambiente usado para avaliar o `app.config.js` e acabar embutindo outra URL.
  */
 function baseUrl(): string {
-  const doAmbiente = process.env.EXPO_PUBLIC_API_URL;
-  if (doAmbiente) return doAmbiente.replace(/\/+$/, "");
-
   const doApp = Constants.expoConfig?.extra?.apiBaseUrl;
   if (typeof doApp === "string" && doApp) return doApp.replace(/\/+$/, "");
 

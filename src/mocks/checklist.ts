@@ -11,7 +11,7 @@ import { ApiError, delay } from "./latency";
 const TEMPLATE: DriverChecklistTemplate = {
   id: "tpl-preview-carreta",
   name: "Pré-viagem — Carreta",
-  version: "v4",
+  version: 4,
   sections: [
     {
       title: "Documentação",

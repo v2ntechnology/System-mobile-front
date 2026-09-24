@@ -9,6 +9,7 @@ import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Button, Card, Field, SectionHeader, SheetScreen, StateView, Text } from "@/components/ui";
 import { getTemplate, submitChecklist } from "@/features/checklist/api";
 import { getHome } from "@/features/journey/api";
+import { useCurrentBinding, useInvalidarVinculo } from "@/features/vehicle/hooks";
 import { HIT_TARGET, theme, useColors, useThemedStyles, type Scheme } from "@/theme";
 
 type Answers = Record<string, DriverChecklistAnswer>;
@@ -20,7 +21,21 @@ export default function ChecklistScreen() {
   const styles = useThemedStyles(makeStyles);
   const [answers, setAnswers] = useState<Answers>({});
 
-  const template = useQuery({ queryKey: ["checklist-template"], queryFn: getTemplate });
+  /*
+   * ⚠️ O VÍNCULO VEM PRIMEIRO, e o template depende dele.
+   *
+   * Sem caminhão escaneado não existe checklist para pedir: o servidor responde 409,
+   * e pedir mesmo assim só produziria um erro que a tela teria de explicar. O
+   * `enabled` é o que faz a tela perguntar na ordem certa.
+   */
+  const { data: vinculo, isPending: vinculoPendente } = useCurrentBinding();
+  const invalidarVinculo = useInvalidarVinculo();
+
+  const template = useQuery({
+    queryKey: ["checklist-template", vinculo?.veiculo.id],
+    queryFn: getTemplate,
+    enabled: Boolean(vinculo),
+  });
   const home = useQuery({ queryKey: ["driver-home"], queryFn: getHome });
 
   const items = useMemo(
@@ -42,7 +57,7 @@ export default function ChecklistScreen() {
       submitChecklist({
         templateId: template.data!.id,
         templateVersion: template.data!.version,
-        plate: home.data?.driver.currentVehiclePlate ?? "",
+        plate: vinculo?.veiculo.plate ?? "",
         tripId: home.data?.currentTrip?.id,
         // RN-054 — relógio do aparelho; o servidor carimba o dele na chegada.
         filledAt: new Date().toISOString(),
@@ -50,6 +65,10 @@ export default function ChecklistScreen() {
       }),
     onSuccess: (receipt) => {
       void queryClient.invalidateQueries({ queryKey: ["driver-home"] });
+      /* ⚠️ Item crítico reprovado TRAVA o caminhão, e o vínculo passa a refletir
+         isso. Sem esta linha a home continuaria mostrando o veículo como se nada
+         tivesse acontecido. */
+      void invalidarVinculo();
       Alert.alert(
         receipt.result === "APROVADO" ? "Checklist aprovado" : "Checklist enviado",
         receipt.message,
@@ -81,11 +100,28 @@ export default function ChecklistScreen() {
     if (!result.canceled && asset) setAnswer(itemId, { photoUri: asset.uri });
   }
 
-  if (template.isPending || template.isError) {
+  /*
+   * ⚠️ SEM VÍNCULO A TELA NÃO MONTA O FORMULÁRIO, e isso não é decoração: é o fluxo.
+   * O checklist é liberado pelo caminhão identificado, e a recusa é do servidor. A
+   * tela só explica o que fazer e oferece a câmera.
+   */
+  if (!vinculoPendente && !vinculo) {
     return (
       <SheetScreen scroll={false}>
         <StateView
-          loading={template.isPending}
+          empty="Escaneie o caminhão"
+          emptyHint="O checklist é o do veículo que você vai dirigir. Leia o QR colado nele para liberar."
+          emptyAction={{ label: "Abrir a câmera", onPress: () => router.push("/scanner") }}
+        />
+      </SheetScreen>
+    );
+  }
+
+  if (vinculoPendente || template.isPending || template.isError) {
+    return (
+      <SheetScreen scroll={false}>
+        <StateView
+          loading={vinculoPendente || template.isPending}
           error={template.error}
           onRetry={() => void template.refetch()}
           skeleton
@@ -103,7 +139,7 @@ export default function ChecklistScreen() {
           <View style={styles.summaryCopy}>
             <Text variant="titleMd">{template.data.name}</Text>
             <Text variant="labelSm" tone="muted" tabular>
-              {template.data.version} · {home.data?.driver.currentVehiclePlate ?? "—"}
+              v{template.data.version} · {vinculo?.veiculo.plate ?? "—"}
             </Text>
           </View>
           <Text variant="metricMd" tone={answeredAll ? "success" : "default"}>

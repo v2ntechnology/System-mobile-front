@@ -14,6 +14,15 @@ interface Props {
   empty?: string;
   /** Uma linha dizendo o que fazer para o vazio deixar de existir. */
   emptyHint?: string;
+  /**
+   * O botão que RESOLVE o vazio.
+   *
+   * ⚠️ Diferente do `onRetry`, que só repete a mesma chamada. Aqui o vazio é
+   * legítimo e tem uma saída concreta: sem caminhão escaneado, a saída é abrir a
+   * câmera. Dizer "escaneie o caminhão" sem o botão manda o motorista procurar
+   * sozinho onde fica o scanner, de luva, no pátio.
+   */
+  emptyAction?: { label: string; onPress: () => void };
   /** Carregamento de lista: blocos no lugar do conteúdo, não roda no meio da tela. */
   skeleton?: boolean;
 }
@@ -25,7 +34,15 @@ interface Props {
  * do `detail` do servidor quando existe — mensagem genérica é a exceção, não a
  * regra, e em campo o motorista precisa saber se tenta de novo ou liga.
  */
-export function StateView({ loading, error, onRetry, empty, emptyHint, skeleton = false }: Props) {
+export function StateView({
+  loading,
+  error,
+  onRetry,
+  empty,
+  emptyHint,
+  emptyAction,
+  skeleton = false,
+}: Props) {
   const colors = useColors();
 
   if (loading) {
@@ -62,6 +79,9 @@ export function StateView({ loading, error, onRetry, empty, emptyHint, skeleton 
           <Text variant="labelMd" tone="muted" style={styles.center}>
             {emptyHint}
           </Text>
+        ) : null}
+        {emptyAction ? (
+          <Button label={emptyAction.label} onPress={emptyAction.onPress} shape="pill" />
         ) : null}
       </View>
     );

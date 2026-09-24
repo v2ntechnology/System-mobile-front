@@ -111,6 +111,11 @@ function RootNavigator() {
           {/* Só repassa os parâmetros do deep link para o login. Nunca é vista. */}
           <Stack.Screen name="acesso" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          {/* Tela cheia, sem header: a câmera é a tela, e o botão de fechar é dela. */}
+          <Stack.Screen
+            name="scanner"
+            options={{ headerShown: false, presentation: "fullScreenModal" }}
+          />
           {/* Nome da rota em inglês, título em pt-BR: o caminho é código, o texto é interface. */}
           <Stack.Screen name="checklist" options={{ title: "Checklist pré-viagem" }} />
           <Stack.Screen name="fuel-entry" options={{ title: "Novo abastecimento" }} />
