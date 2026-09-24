@@ -115,7 +115,29 @@ export function submitChecklist(
 ): Promise<DriverChecklistReceipt> {
   return request<DriverChecklistReceipt>("/v1/checklist/submit", {
     method: "POST",
-    body: submission,
+    /*
+     * ⚠️ `result` VIRA `status` AQUI, e não é capricho de nome.
+     *
+     * A tela fala `result` porque é o resultado da conferência daquele item; o
+     * servidor fala `status` porque é o estado gravado na resposta. Enquanto o
+     * mapa não existia, o campo chegava ausente, o servidor lia string vazia e
+     * recusava com "Resposta inválida em <primeiro item>", apontando para um item
+     * que não tinha nada de errado. É o defeito clássico de contrato: nada falha
+     * no caminho, e a mensagem culpa o lugar errado.
+     *
+     * A tradução mora nesta fronteira de propósito. Renomear na tela faria o
+     * vocabulário do servidor vazar para dentro do componente, e é justamente
+     * disto que este arquivo existe para proteger.
+     */
+    body: {
+      ...submission,
+      answers: submission.answers.map((resposta) => ({
+        itemId: resposta.itemId,
+        status: resposta.result,
+        note: resposta.note,
+        noteSource: resposta.noteSource,
+      })),
+    },
   });
 }
 

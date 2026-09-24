@@ -74,6 +74,7 @@ export default function ChecklistScreen() {
       submitChecklist({
         odometerKm: Number(odometro.replace(/\D/g, "")),
         notes: observacoes.trim() || undefined,
+        /* A tela manda o seu vocabulário; a fronteira traduz para o do servidor. */
         answers: Object.values(respostas).map(({ itemId, result, note, noteSource }) => ({
           itemId,
           result,
