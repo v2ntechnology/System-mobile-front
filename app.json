@@ -47,6 +47,12 @@
           "recordAudioAndroid": false
         }
       ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "O RookHub usa o microfone para você ditar a observação do item reprovado no checklist, em vez de digitar."
+        }
+      ],
       "expo-font"
     ],
     "experiments": {

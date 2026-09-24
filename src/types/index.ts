@@ -395,7 +395,31 @@ export interface DriverFuelEntryReceipt {
 /* Checklist pré-viagem (RF-012 a RF-017)                                      */
 /* -------------------------------------------------------------------------- */
 
-export type ChecklistResult = "APROVADO" | "REPROVADO";
+/**
+ * A legenda da folha de papel, com os três estados que ela sempre teve.
+ *
+ * ⚠️ Era binário aqui, e a folha real da Servioeste mostrou o terceiro: **C, NC e
+ * NA**. Sem o "não aplica", o motorista de um caminhão sem cones e sem balança
+ * marca "conforme" nos dois, porque é a única saída que a tela oferece, e resposta
+ * de enfeite ensina a responder sem olhar.
+ *
+ * Os valores são os do servidor, e não traduções: a tela traduz na hora de
+ * desenhar, e mandar `"conforme"` evita um mapa a mais para desencontrar.
+ */
+export type ChecklistResult = "conforme" | "nao_conforme" | "nao_aplica";
+
+/**
+ * De onde veio o texto da observação.
+ *
+ * ⚠️ Não é telemetria. Boa parte dos motoristas não escreve, então a observação
+ * também entra por voz, transcrita por IA. Quem lê no painel precisa saber se
+ * aquelas palavras foram escolhidas ou adivinhadas: transcrição erra, e erra mais
+ * no vocabulário de oficina.
+ */
+export type ChecklistNoteSource = "typed" | "dictated";
+
+/** Foto ou áudio pendurado num item. */
+export type ChecklistAttachmentKind = "photo" | "audio";
 
 export interface DriverChecklistItem {
   id: string;
@@ -427,31 +451,78 @@ export interface DriverChecklistTemplate {
   sections: DriverChecklistSection[];
 }
 
+/**
+ * Um anexo já confirmado no servidor.
+ *
+ * ⚠️ Não guarda URI local nem URL: guarda o **id**. O arquivo vive no object
+ * storage, e quem quiser vê-lo pede um endereço temporário. Uma URL guardada aqui
+ * seria um endereço que para de funcionar sozinho.
+ */
+export interface DriverChecklistAttachment {
+  id: string;
+  itemId: string;
+  kind: ChecklistAttachmentKind;
+  /** URI local, só enquanto a tela está aberta, para mostrar a miniatura. */
+  localUri?: string;
+}
+
 export interface DriverChecklistAnswer {
   itemId: string;
   result: ChecklistResult;
+  /** ⚠️ Obrigatória quando o resultado é `nao_conforme`: o servidor recusa sem ela. */
   note?: string;
-  /** URI local da foto no aparelho; o upload é do app, não deste contrato. */
-  photoUri?: string;
+  noteSource?: ChecklistNoteSource;
 }
 
 export interface DriverChecklistSubmission {
-  templateId: string;
-  templateVersion: number;
-  plate: string;
-  tripId?: string;
-  /** Relógio do aparelho (RN-054) — o servidor carimba o dele na chegada. */
-  filledAt: string;
+  /** O "KM" do cabeçalho da folha. Obrigatório no envio. */
+  odometerKm: number;
+  /** As observações gerais do rodapé. */
+  notes?: string;
+  /** O campo "Local" do papel, que o aparelho preenche sozinho quando pode. */
+  latitude?: number;
+  longitude?: number;
   answers: DriverChecklistAnswer[];
 }
 
+/**
+ * O que o servidor devolve depois do envio.
+ *
+ * @property veiculoTravado ⚠️ vem do servidor, e a tela **não deduz** isto da lista
+ *   de críticos. A trava é uma escrita no banco, e a tela precisa dizer "este
+ *   caminhão está parado" com a mesma certeza que o servidor tem, e não com uma
+ *   inferência que um dia diverge.
+ */
 export interface DriverChecklistReceipt {
   id: string;
-  result: ChecklistResult;
-  blocking: boolean;
-  receivedAt: string;
-  /** Mensagem pronta para a tela: o que acontece agora com o veículo. */
-  message: string;
+  enviadoEm: string;
+  total: number;
+  naoConformes: number;
+  criticosReprovados: string[];
+  veiculoTravado: boolean;
+}
+
+/** O rascunho aberto, com o modelo junto: uma ida à rede, e não duas. */
+export interface DriverChecklistDraft {
+  id: string;
+  modelo: DriverChecklistTemplate;
+  placa: string;
+  odometroDoVinculo?: number;
+}
+
+/** A autorização de upload: para onde mandar o arquivo, e por quanto tempo. */
+export interface DriverChecklistUploadTarget {
+  id: string;
+  url: string;
+  /** ⚠️ Tem de ser repetido no PUT: ele entra na assinatura. */
+  requiredContentType: string;
+  expiresAt: string;
+}
+
+/** O que a transcrição devolve. */
+export interface DriverTranscription {
+  text: string;
+  confidence?: number;
 }
 
 /* -------------------------------------------------------------------------- */

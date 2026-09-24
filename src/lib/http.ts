@@ -52,7 +52,13 @@ async function autorizacao(): Promise<Record<string, string>> {
 }
 
 interface Opcoes extends Omit<RequestInit, "body"> {
-  /** Objeto vira JSON. `FormData` passa intacto, sem `Content-Type` (ver abaixo). */
+  /**
+   * Objeto vira JSON. `FormData` e binário cru passam intactos (ver abaixo).
+   *
+   * ⚠️ Binário cru existe por causa do áudio ditado: o corpo é um arquivo só, sem
+   * campo nenhum junto, e o `Content-Type` do pedido já diz o formato. Multipart
+   * acrescentaria uma camada de fronteira para transportar exatamente a mesma coisa.
+   */
   body?: unknown;
   /** Rota pública: não injeta token e não tenta renovar em 401. Login e refresh. */
   publica?: boolean;
@@ -108,6 +114,10 @@ function renovarSessao(): Promise<void> {
 async function enviar<T>(caminho: string, opcoes: Opcoes = {}): Promise<T> {
   const { body, publica, headers, ...resto } = opcoes;
   const ehFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const ehBinario =
+    (typeof Blob !== "undefined" && body instanceof Blob) ||
+    body instanceof ArrayBuffer ||
+    ArrayBuffer.isView(body as ArrayBufferView);
 
   const cabecalhos: Record<string, string> = {
     Accept: "application/json",
@@ -120,14 +130,24 @@ async function enviar<T>(caminho: string, opcoes: Opcoes = {}): Promise<T> {
    * cabeçalho com o `boundary`, e escrever `multipart/form-data` na mão produz um
    * corpo que o servidor não consegue separar, com erro que aponta para o servidor.
    */
-  if (body !== undefined && !ehFormData) {
+  /*
+   * ⚠️ Binário cru também fica de fora: o `Content-Type` dele é quem chama que sabe
+   * ("audio/webm;codecs=opus", "audio/mp4"), e sobrescrever com JSON aqui faria o
+   * servidor tentar ler bytes de áudio como objeto.
+   */
+  if (body !== undefined && !ehFormData && !ehBinario) {
     cabecalhos["Content-Type"] = "application/json";
   }
 
   const resposta = await fetch(`${baseUrl()}${caminho}`, {
     ...resto,
     headers: cabecalhos,
-    body: body === undefined ? undefined : ehFormData ? (body as FormData) : JSON.stringify(body),
+    body:
+      body === undefined
+        ? undefined
+        : ehFormData || ehBinario
+          ? (body as BodyInit)
+          : JSON.stringify(body),
   });
 
   if (resposta.ok) {
